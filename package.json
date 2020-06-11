@@ -1,0 +1,20 @@
+{
+  "name": "ts",
+  "version": "1.0.0",
+  "description": "",
+  "main": "closure.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^12.12.14"
+  },
+  "dependencies": {
+    "@azure/storage-blob": "^12.0.1",
+    "@azure/storage-file-share": "^12.0.0",
+    "dotenv": "^8.2.0"
+  }
+}
