@@ -68,6 +68,8 @@ async function compareStreamWithFile(
 
         for (let i = 0; i < readRes.bytesRead; i++) {
           if (chunk[chunk.byteOffset + i] !== readRes.buffer[i]) {
+            console.log("Blob:", chunk[chunk.byteOffset + i]);
+            console.log("file:", readRes.buffer[i]);
             console.log(
               `miss match at offset ${
                 start + i
