@@ -15,6 +15,9 @@ import * as dotenv from "dotenv";
 import * as fs from "fs";
 console.log(dotenv.config());
 
+import { setLogLevel } from "@azure/logger";
+setLogLevel("info");
+
 export async function main() {
   const account = process.env.ACCOUNT_NAME || "";
   const accountKey = process.env.ACCOUNT_KEY || "";
@@ -41,7 +44,13 @@ export async function main() {
   const blockBlobClient = containerClient.getBlockBlobClient(blobName);
 
   console.log(`start upload file ${filePath} at ${new Date()}`)
-  await blockBlobClient.uploadFile(filePath, { blockSize: chunkSize })
+  await blockBlobClient.uploadFile(filePath, {
+    blockSize: chunkSize,
+    concurrency: 16,
+    onProgress: (e) => {
+      console.log(e.loadedBytes);
+    }
+  })
   console.log(`Upload block blob ${blobName} successfully at ${new Date()}`);
 
   await blockBlobClient.setHTTPHeaders({ blobContentMD5: md5 });
