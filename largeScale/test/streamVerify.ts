@@ -7,6 +7,7 @@ import {
 // Load the .env file if it exists
 import * as dotenv from "dotenv";
 import * as fs from "fs";
+import { off } from "process";
 console.log(dotenv.config());
 
 // import { setLogLevel } from "@azure/logger";
@@ -96,18 +97,21 @@ export async function main() {
   for (let i = 0; i < rangeNum; i++) {
     const pro = new Promise(async (resolve, reject) => {
       console.log(`promise called ${i}`);
+      const offset = i * rangeSize;
       try {
-        const dow = await blobClient.download(i * rangeSize, rangeSize);
+        console.log(offset, rangeSize);
+        const dow = await blobClient.download(offset, rangeSize);
+
         await streamVerify(
           dow.readableStreamBody,
           fs.createReadStream(filePath, {
             autoClose: true,
-            end: i * rangeSize + rangeSize - 1,
-            start: i * rangeSize,
+            end: offset + rangeSize - 1,
+            start: offset,
           })
         );
       } catch (err) {
-        console.log(`promise failed ${i}: ${err}`);
+        console.log(`promise failed ${i}: ${err} ${offset} ${rangeSize}`);
         reject(err);
       }
       resolve();
