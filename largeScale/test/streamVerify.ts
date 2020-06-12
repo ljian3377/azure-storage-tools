@@ -14,8 +14,8 @@ export const fsRead = util.promisify(fs.read);
 export const fsStat = util.promisify(fs.stat);
 
 const MB = 1024 * 1024;
-const MAX_BLOCK_SIZE = eval(process.env.BLOCK_SIZE);
-const concurrency = eval(process.env.concurrency) || 16;
+const MAX_BLOCK_SIZE = eval(process.env.BLOCK_SIZE) || 4 * MB;
+const concurrency = eval(process.env.concurrency) || 1;
 
 // import { setLogLevel } from "@azure/logger";
 // setLogLevel("info");
@@ -67,6 +67,11 @@ async function compareStreamWithFile(
         }
 
         for (let i = 0; i < readRes.bytesRead; i++) {
+          if (start === 0 && i < 8) {
+            console.log(`Blob ${i}:`, chunk[chunk.byteOffset + i]);
+            console.log(`file ${i}:`, readRes.buffer[i]);
+          }
+
           if (chunk[chunk.byteOffset + i] !== readRes.buffer[i]) {
             console.log("Blob:", chunk[chunk.byteOffset + i]);
             console.log("file:", readRes.buffer[i]);
@@ -75,12 +80,12 @@ async function compareStreamWithFile(
                 start + i
               }, end: ${endExclusize}, length ${readRes.bytesRead}`
             );
-            console.log("chunk:", chunk);
-            console.log("file:", readRes.buffer);
             reject(new Error("miss matched"));
-            abort();
+            break;
+            // abort();
           }
         }
+
         start += readRes.bytesRead;
         if (start > endExclusize) {
           reject(new Error("file out range"));
@@ -142,6 +147,7 @@ export async function main() {
       try {
         console.log(offset, rangeSize);
         const dow = await blobClient.download(offset, rangeSize);
+
         await compareStreamWithFile(
           dow.readableStreamBody,
           fd,
