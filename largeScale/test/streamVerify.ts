@@ -85,7 +85,7 @@ export async function main() {
   const accountKey = process.env.ACCOUNT_KEY || "";
 
   const MB = 1024 * 1024;
-  const fileSize = 6 * MB * MB;
+  const fileSize = 6 * 1024 * MB;
   const rangeNum = 32;
   const rangeSize = fileSize / rangeNum;
   const filePath = process.env.FILE_PATH;
