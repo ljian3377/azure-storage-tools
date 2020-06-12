@@ -35,7 +35,10 @@ async function streamVerify(
       let localChunk = fileStream.read(chunk.byteLength);
       if (localChunk) {
         if (!chunkCompare(chunk, localChunk)) {
-          reject(`miss matched`);
+          if (typeof localChunk === "string") {
+            localChunk = Buffer.from(localChunk);
+          }
+          reject(`miss matched, ${chunk.byteLength} ${localChunk}`);
         }
         return;
       } else {
@@ -44,7 +47,10 @@ async function streamVerify(
           if (localChunk) {
             fileStream.removeListener("readable", readableCallback);
             if (!chunkCompare(chunk, localChunk)) {
-              reject(`miss matched`);
+              if (typeof localChunk === "string") {
+                localChunk = Buffer.from(localChunk);
+              }
+              reject(`miss matched, ${chunk.byteLength} ${localChunk}`);
             }
           }
         };
@@ -100,20 +106,17 @@ export async function main() {
       const offset = i * rangeSize;
       try {
         console.log(offset, rangeSize);
-        const dow = await blobClient.download(offset, rangeSize, {
-          onProgress: (ev) => {
-            console.log(i, ev.loadedBytes);
-          },
+        const dow = await blobClient.download(offset, rangeSize);
+
+        const fileStream = fs.createReadStream(filePath, {
+          autoClose: true,
+          end: offset + rangeSize - 1,
+          start: offset,
         });
 
-        await streamVerify(
-          dow.readableStreamBody,
-          fs.createReadStream(filePath, {
-            autoClose: true,
-            end: offset + rangeSize - 1,
-            start: offset,
-          })
-        );
+        console.log("file");
+
+        await streamVerify(dow.readableStreamBody, fileStream);
       } catch (err) {
         console.log(`promise failed ${i}: ${err} ${offset} ${rangeSize}`);
         reject(err);
