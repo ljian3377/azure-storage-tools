@@ -7,7 +7,6 @@ import {
 // Load the .env file if it exists
 import * as dotenv from "dotenv";
 import * as fs from "fs";
-import { rejects } from "assert";
 console.log(dotenv.config());
 
 // import { setLogLevel } from "@azure/logger";
@@ -30,14 +29,10 @@ async function streamVerify(
   let i = 0;
   return new Promise((resolve, reject) => {
     downStream.on("data", (chunk) => {
-      // console.log(i++);
-
-      // console.log(chunk);
       chunk = Buffer.from(chunk);
 
       let localChunk = fileStream.read(chunk.byteLength);
       if (localChunk) {
-        // compare with buffer
         if (!chunkCompare(chunk, localChunk)) {
           reject(`miss matched`);
         }
@@ -47,7 +42,6 @@ async function streamVerify(
           localChunk = fileStream.read(chunk.byteLength);
           if (localChunk) {
             fileStream.removeListener("readable", readableCallback);
-            // compare with buffer
             if (!chunkCompare(chunk, localChunk)) {
               reject(`miss matched`);
             }
@@ -114,7 +108,7 @@ export async function main() {
         );
       } catch (err) {
         console.log(`promise failed ${i}`);
-        rejects(err);
+        reject(err);
       }
       resolve();
     });
