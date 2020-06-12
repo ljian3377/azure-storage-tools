@@ -100,7 +100,12 @@ export async function main() {
       const offset = i * rangeSize;
       try {
         console.log(offset, rangeSize);
-        const dow = await blobClient.download(offset, rangeSize);
+        const dow = await blobClient.download(offset, rangeSize, {
+          onProgress: (ev) => {
+            console.log(i, ev.loadedBytes);
+          },
+        });
+        console.log(dow);
 
         await streamVerify(
           dow.readableStreamBody,
