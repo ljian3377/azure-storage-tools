@@ -15,7 +15,7 @@ export const fsStat = util.promisify(fs.stat);
 
 const MB = 1024 * 1024;
 const MAX_BLOCK_SIZE = eval(process.env.BLOCK_SIZE);
-const concurrency = 16;
+const concurrency = 1;
 
 // import { setLogLevel } from "@azure/logger";
 // setLogLevel("info");
@@ -70,9 +70,11 @@ async function compareStreamWithFile(
           console.log(chunk);
           console.log(readRes.buffer);
           reject(new Error("miss match"));
+          abort();
         }
 
         start += readRes.bytesRead;
+        console.log("matched up to", start);
         if (start > endExclusize) {
           reject(new Error("file out range"));
         }
@@ -114,8 +116,8 @@ export async function main() {
     accountKey
   );
   const blobClient = new BlobClient(
-    // "https://jianch.blob.core.windows.net/newcontainer1591948757003/newblob1591948757327",
-    "https://jianch.blob.core.windows.net/newcontainer1591948757003/CDImage.ape",
+    "https://jianch.blob.core.windows.net/newcontainer1591948757003/newblob1591948757327",
+    // "https://jianch.blob.core.windows.net/newcontainer1591948757003/CDImage.ape",
     sharedKeyCredential
   );
 
