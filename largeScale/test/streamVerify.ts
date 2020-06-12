@@ -22,7 +22,6 @@ async function streamVerify(
   downStream: NodeJS.ReadableStream,
   fileStream: NodeJS.ReadableStream
 ) {
-  let i = 0;
   return new Promise((resolve, reject) => {
     downStream.on("data", (chunk) => {
       chunk = Buffer.from(chunk);
@@ -33,6 +32,9 @@ async function streamVerify(
           if (typeof localChunk === "string") {
             localChunk = Buffer.from(localChunk);
           }
+          console.log("=====");
+          console.log(localChunk);
+          console.log(chunk);
           reject(`miss matched, ${chunk.byteLength} ${localChunk.byteLength}`);
         }
         return;
@@ -45,6 +47,9 @@ async function streamVerify(
               if (typeof localChunk === "string") {
                 localChunk = Buffer.from(localChunk);
               }
+              console.log("=====");
+              console.log(localChunk);
+              console.log(chunk);
               reject(
                 `miss matched, ${chunk.byteLength} ${localChunk.byteLength}`
               );
@@ -92,6 +97,7 @@ export async function main() {
     accountKey
   );
   const blobClient = new BlobClient(
+    // "https://jianch.blob.core.windows.net/newcontainer1591948757003/newblob1591948757327",
     "https://jianch.blob.core.windows.net/newcontainer1591948757003/newblob1591948757327",
     sharedKeyCredential
   );
@@ -115,7 +121,7 @@ export async function main() {
 
         await streamVerify(dow.readableStreamBody, fileStream);
       } catch (err) {
-        console.log(`promise failed ${i}: ${err} ${offset} ${rangeSize}`);
+        console.log(`promise failed ${i}: ${err}`);
         reject(err);
       }
       resolve();
