@@ -13,8 +13,9 @@
     "@types/node": "^12.12.14"
   },
   "dependencies": {
-    "@azure/storage-blob": "^12.0.1",
-    "@azure/storage-file-share": "^12.0.0",
+    "@azure/storage-blob": "file:azure-storage-blob-12.2.0-preview.1.tgz",
+    "@azure/storage-file-datalake": "latest",
+    "@azure/storage-file-share": "latest",
     "dotenv": "^8.2.0"
   }
 }
