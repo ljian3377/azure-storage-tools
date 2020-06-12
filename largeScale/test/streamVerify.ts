@@ -102,8 +102,8 @@ export async function main() {
           dow.readableStreamBody,
           fs.createReadStream(filePath, {
             autoClose: true,
-            end: i * rangeNum + rangeSize,
-            start: i * rangeNum,
+            end: i * rangeSize + rangeSize - 1,
+            start: i * rangeSize,
           })
         );
       } catch (err) {
