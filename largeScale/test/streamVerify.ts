@@ -15,7 +15,7 @@ export const fsStat = util.promisify(fs.stat);
 
 const MB = 1024 * 1024;
 const MAX_BLOCK_SIZE = eval(process.env.BLOCK_SIZE);
-const concurrency = 1;
+const concurrency = eval(process.env.concurrency) | 16;
 
 // import { setLogLevel } from "@azure/logger";
 // setLogLevel("info");
