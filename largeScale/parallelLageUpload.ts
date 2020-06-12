@@ -10,7 +10,7 @@ const { Readable } = require("stream");
 // setLogLevel("info");
 
 function md5(input: string | Buffer | Uint8Array) {
-  return createHash('md5').update(input).digest('hex');
+  return createHash("md5").update(input).digest("hex");
 }
 
 function toBuffer(data: string | Buffer): Buffer {
@@ -27,7 +27,10 @@ async function main() {
 
   // Use StorageSharedKeyCredential with storage account and account key
   // StorageSharedKeyCredential is only avaiable in Node.js runtime, not in browsers
-  const sharedKeyCredential = new StorageSharedKeyCredential(account, accountKey);
+  const sharedKeyCredential = new StorageSharedKeyCredential(
+    account,
+    accountKey
+  );
 
   // ONLY AVAILABLE IN NODE.JS RUNTIME
   // DefaultAzureCredential will first look for Azure Active Directory (AAD)
@@ -88,7 +91,7 @@ async function main() {
         console.log(i);
         if (generatedChunk < 2) {
           const buf = randomBytes(chunkSize / 2);
-          this.push(buf, 'hex');
+          this.push(buf, "hex");
           const index = i * 2 + generatedChunk;
           if (i < chunkNumToVerifyBytes) {
             uploadedBuffers[index] = buf;
@@ -98,10 +101,12 @@ async function main() {
         } else {
           this.push(null);
         }
-      }
+      },
     });
 
-    promiseArray.push(fileClient.append(() => randomStream, chunkSize * i, chunkSize));
+    promiseArray.push(
+      fileClient.append(() => randomStream, chunkSize * i, chunkSize)
+    );
     totalSize += chunkSize;
   }
 
@@ -109,25 +114,39 @@ async function main() {
   console.log(`append done`);
 
   const flushFileResponse = await fileClient.flush(totalSize);
-  console.log(`Upload file ${fileName} successfully`, flushFileResponse.requestId);
+  console.log(
+    `Upload file ${fileName} successfully`,
+    flushFileResponse.requestId
+  );
 
   const getRes = await fileClient.getProperties();
   if (getRes.contentLength !== totalSize) {
-    throw new Error(`downloaded size do not match, downloaded ${getRes.contentLength}, uploaded ${totalSize}`);
+    throw new Error(
+      `downloaded size do not match, downloaded ${getRes.contentLength}, uploaded ${totalSize}`
+    );
   }
 
   const readFileResponse = await fileClient.read();
-  await streamVerify(readFileResponse.readableStreamBody, chunkSize / 2, uploadHashs, uploadedBuffers);
+  await streamVerify(
+    readFileResponse.readableStreamBody,
+    chunkSize / 2,
+    uploadHashs,
+    uploadedBuffers
+  );
 
   // Delete filesystem
   await fileSystemClient.delete();
   console.log("Deleted filesystem");
 }
 
-async function streamVerify(readableStream: NodeJS.ReadableStream, chunkSize: number, hashArray: string[], dataArray: Buffer[]) {
+async function streamVerify(
+  readableStream: NodeJS.ReadableStream,
+  chunkSize: number,
+  hashArray: string[],
+  dataArray: Buffer[]
+) {
   let i = 0;
-  readableStream.pause();
-  console.log("start verify")
+  console.log("start verify");
   return new Promise((resolve, reject) => {
     readableStream.on("readable", () => {
       let chunk = readableStream.read(chunkSize);
