@@ -1,83 +1,99 @@
-import { StorageSharedKeyCredential, BlobClient } from "@azure/storage-blob";
-
+import {
+  StorageSharedKeyCredential,
+  BlobClient,
+  BlockBlobClient,
+} from "@azure/storage-blob";
+import * as util from "util";
 // Load the .env file if it exists
 import * as dotenv from "dotenv";
 import * as fs from "fs";
+import { abort } from "process";
 console.log(dotenv.config());
+
+export const fsRead = util.promisify(fs.read);
+export const fsStat = util.promisify(fs.stat);
+
+const MB = 1024 * 1024;
+const MAX_BLOCK_SIZE = eval(process.env.BLOCK_SIZE);
+const concurrency = 16;
 
 // import { setLogLevel } from "@azure/logger";
 // setLogLevel("info");
 
-function chunkCompare(buf: Buffer | String, buf2: Buffer | string): boolean {
-  if (typeof buf === "string") {
-    buf = Buffer.from(buf);
+function toBuffer(bs: Buffer | string) {
+  if (typeof bs === "string") {
+    bs = Buffer.from(bs);
   }
-  if (typeof buf2 === "string") {
-    buf2 = Buffer.from(buf2);
-  }
-  return (buf as Buffer).compare(buf2) === 0;
+  return bs;
 }
 
-async function streamVerify(
+async function getFd(fileName: string): Promise<number> {
+  return new Promise((resolve, reject) => {
+    fs.exists(fileName, function (exists) {
+      if (exists) {
+        fs.open(fileName, "r", function (error, fd) {
+          if (error) {
+            reject(error);
+          } else {
+            resolve(fd);
+          }
+        });
+      } else {
+        reject(new Error("File do not exist."));
+      }
+    });
+  });
+}
+
+async function compareStreamWithFile(
   downStream: NodeJS.ReadableStream,
-  fileStream: NodeJS.ReadableStream
+  fd: number,
+  start: number,
+  endExclusize: number
 ) {
   return new Promise((resolve, reject) => {
-    downStream.on("data", (chunk) => {
-      chunk = Buffer.from(chunk);
-
-      let localChunk = fileStream.read(chunk.byteLength);
-      if (localChunk) {
-        if (!chunkCompare(chunk, localChunk)) {
-          if (typeof localChunk === "string") {
-            localChunk = Buffer.from(localChunk);
-          }
-          console.log("=====");
-          console.log(localChunk);
-          console.log(chunk);
-          reject(`miss matched, ${chunk.byteLength} ${localChunk.byteLength}`);
+    downStream.on("readable", async () => {
+      const fileBuf = new Uint8Array(MAX_BLOCK_SIZE);
+      let readRes = await fsRead(fd, fileBuf, 0, MAX_BLOCK_SIZE, start);
+      let chunk = downStream.read(readRes.bytesRead);
+      while (chunk) {
+        chunk = toBuffer(chunk);
+        if (readRes.bytesRead !== chunk.byteLength) {
+          reject(
+            new Error(
+              `Some ends earlier, file: ${readRes.bytesRead}, Blob: ${chunk.byteLength}`
+            )
+          );
         }
-        return;
-      } else {
-        const readableCallback = function () {
-          localChunk = fileStream.read(chunk.byteLength);
-          if (localChunk) {
-            fileStream.removeListener("readable", readableCallback);
-            if (!chunkCompare(chunk, localChunk)) {
-              if (typeof localChunk === "string") {
-                localChunk = Buffer.from(localChunk);
-              }
-              console.log("=====");
-              console.log(localChunk);
-              console.log(chunk);
-              reject(
-                `miss matched, ${chunk.byteLength} ${localChunk.byteLength}`
-              );
-            }
-          }
-        };
 
-        fileStream.on("readable", readableCallback);
-        fileStream.on("end", () => {
-          console.log("fileStream ended");
-          reject();
-        });
+        if (chunk.compare(readRes.buffer, undefined, readRes.bytesRead) !== 0) {
+          console.log(chunk);
+          console.log(readRes.buffer);
+          reject(new Error("miss match"));
+        }
 
-        fileStream.on("error", (err) => {
-          console.log(`fileStream throw ${err}`);
-          reject();
-        });
+        start += readRes.bytesRead;
+        if (start > endExclusize) {
+          reject(new Error("file out range"));
+        }
+
+        readRes = await fsRead(fd, fileBuf, 0, MAX_BLOCK_SIZE, start);
+        chunk = downStream.read(MAX_BLOCK_SIZE);
       }
     });
 
     downStream.on("end", () => {
-      console.log("downStream end");
-      resolve("end");
+      console.log(`downStream end, ${start} ${endExclusize}`);
+      if (start === endExclusize) {
+        resolve(true);
+      } else {
+        reject(new Error(`file not done yet ${start}, ${endExclusize}`));
+      }
     });
 
     downStream.on("error", () => {
       console.log("downStream err");
-      reject();
+      reject(new Error("downloadStream err"));
     });
   });
 }
@@ -86,11 +102,12 @@ export async function main() {
   const account = process.env.ACCOUNT_NAME || "";
   const accountKey = process.env.ACCOUNT_KEY || "";
 
-  const MB = 1024 * 1024;
-  const fileSize = 6 * 1024 * MB;
-  const rangeNum = 32;
-  const rangeSize = fileSize / rangeNum;
   const filePath = process.env.FILE_PATH;
+  const fileSize = (await fsStat(filePath))["size"];
+  console.log("file size:", fileSize);
+
+  const rangeSize = fileSize / concurrency;
+  const fd = await getFd(filePath);
 
   const sharedKeyCredential = new StorageSharedKeyCredential(
     account,
@@ -98,30 +115,31 @@ export async function main() {
   );
   const blobClient = new BlobClient(
     // "https://jianch.blob.core.windows.net/newcontainer1591948757003/newblob1591948757327",
-    "https://jianch.blob.core.windows.net/newcontainer1591948757003/newblob1591948757327",
+    "https://jianch.blob.core.windows.net/newcontainer1591948757003/CDImage.ape",
     sharedKeyCredential
   );
 
+  const getRes = await blobClient.getProperties();
+  if (getRes.contentLength !== fileSize) {
+    throw new Error(
+      `file size don't match, file: ${fileSize}, blob: ${getRes.contentLength}`
+    );
+  }
+
   let promiseArray = [];
-  for (let i = 0; i < rangeNum; i++) {
+  for (let i = 0; i < concurrency; i++) {
     const pro = new Promise(async (resolve, reject) => {
-      console.log(`promise called ${i}`);
       const offset = i * rangeSize;
       try {
         console.log(offset, rangeSize);
         const dow = await blobClient.download(offset, rangeSize);
-
-        const fileStream = fs.createReadStream(filePath, {
-          autoClose: true,
-          end: offset + rangeSize - 1,
-          start: offset,
-        });
-
-        console.log("file");
-
-        await streamVerify(dow.readableStreamBody, fileStream);
+        await compareStreamWithFile(
+          dow.readableStreamBody,
+          fd,
+          offset,
+          offset + rangeSize
+        );
       } catch (err) {
-        console.log(`promise failed ${i}: ${err}`);
         reject(err);
       }
       resolve();
