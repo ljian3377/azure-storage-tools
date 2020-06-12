@@ -66,18 +66,20 @@ async function compareStreamWithFile(
           );
         }
 
-        if (chunk.compare(readRes.buffer, undefined, readRes.bytesRead) !== 0) {
-          console.log(
-            `miss match at offset ${start}, length: ${readRes.bytesRead}`
-          );
-          console.log(chunk);
-          console.log(readRes.buffer);
-          reject(new Error("miss matched"));
-          abort();
+        for (let i = 0; i < readRes.bytesRead; i++) {
+          if (chunk[chunk.byteOffset + i] !== readRes.buffer[i]) {
+            console.log(
+              `miss match at offset ${
+                start + i
+              }, end: ${endExclusize}, length ${readRes.bytesRead}`
+            );
+            console.log("chunk:", chunk);
+            console.log("file:", readRes.buffer);
+            reject(new Error("miss matched"));
+            abort();
+          }
         }
-
         start += readRes.bytesRead;
-        console.log("matched up to", start);
         if (start > endExclusize) {
           reject(new Error("file out range"));
         }
