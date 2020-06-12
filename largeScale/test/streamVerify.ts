@@ -114,6 +114,10 @@ export async function main() {
   console.log("file size:", fileSize);
 
   const rangeSize = fileSize / concurrency;
+  console.log(
+    `file size: ${fileSize}, concurrency: ${concurrency}, rangeSize: ${rangeSize}`
+  );
+
   const fd = await getFd(filePath);
 
   const sharedKeyCredential = new StorageSharedKeyCredential(
