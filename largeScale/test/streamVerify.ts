@@ -15,7 +15,7 @@ export const fsStat = util.promisify(fs.stat);
 
 const MB = 1024 * 1024;
 const MAX_BLOCK_SIZE = eval(process.env.BLOCK_SIZE) || 4 * MB;
-const concurrency = eval(process.env.concurrency) || 1;
+const concurrency = eval(process.env.concurrency) || 10;
 
 // import { setLogLevel } from "@azure/logger";
 // setLogLevel("info");
@@ -78,7 +78,7 @@ async function compareStreamWithFile(
             console.log(
               `miss match at offset ${
                 start + i
-              }, end: ${endExclusize}, length ${readRes.bytesRead}`
+              }, end: ${endExclusize}, length ${readRes.bytesRead}, i: ${i}`
             );
             reject(new Error("miss matched"));
             break;
