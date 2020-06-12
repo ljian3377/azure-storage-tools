@@ -105,7 +105,6 @@ export async function main() {
             console.log(i, ev.loadedBytes);
           },
         });
-        console.log(dow);
 
         await streamVerify(
           dow.readableStreamBody,
