@@ -120,11 +120,7 @@ export async function main() {
     account,
     accountKey
   );
-  const blobClient = new BlobClient(
-    "https://jianch.blob.core.windows.net/newcontainer1591948757003/newblob1591948757327",
-    // "https://jianch.blob.core.windows.net/newcontainer1591948757003/CDImage.ape",
-    sharedKeyCredential
-  );
+  const blobClient = new BlobClient(process.env.BLOB, sharedKeyCredential);
 
   const getRes = await blobClient.getProperties();
   if (getRes.contentLength !== fileSize) {
