@@ -1,13 +1,8 @@
-import {
-  BlobServiceClient,
-  StorageSharedKeyCredential,
-  BlobClient,
-} from "@azure/storage-blob";
+import { StorageSharedKeyCredential, BlobClient } from "@azure/storage-blob";
 
 // Load the .env file if it exists
 import * as dotenv from "dotenv";
 import * as fs from "fs";
-import { off } from "process";
 console.log(dotenv.config());
 
 // import { setLogLevel } from "@azure/logger";
@@ -38,7 +33,7 @@ async function streamVerify(
           if (typeof localChunk === "string") {
             localChunk = Buffer.from(localChunk);
           }
-          reject(`miss matched, ${chunk.byteLength} ${localChunk}`);
+          reject(`miss matched, ${chunk.byteLength} ${localChunk.byteLength}`);
         }
         return;
       } else {
@@ -50,7 +45,9 @@ async function streamVerify(
               if (typeof localChunk === "string") {
                 localChunk = Buffer.from(localChunk);
               }
-              reject(`miss matched, ${chunk.byteLength} ${localChunk}`);
+              reject(
+                `miss matched, ${chunk.byteLength} ${localChunk.byteLength}`
+              );
             }
           }
         };
