@@ -87,15 +87,14 @@ export async function main() {
   const fileSize = 6 * MB * MB;
   const rangeNum = 32;
   const rangeSize = fileSize / rangeNum;
-
-  const filePath = "T:/CDImage.ape";
+  const filePath = process.env.FILE_PATH;
 
   const sharedKeyCredential = new StorageSharedKeyCredential(
     account,
     accountKey
   );
   const blobClient = new BlobClient(
-    "https://jianch.blob.core.windows.net/newcontainer1591948757003/CDImage.ape",
+    "https://jianch.blob.core.windows.net/newcontainer1591948757003/newblob1591948757327",
     sharedKeyCredential
   );
 
