@@ -107,7 +107,7 @@ export async function main() {
           })
         );
       } catch (err) {
-        console.log(`promise failed ${i}`);
+        console.log(`promise failed ${i}: ${err}`);
         reject(err);
       }
       resolve();
