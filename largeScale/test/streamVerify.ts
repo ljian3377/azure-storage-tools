@@ -97,7 +97,7 @@ export async function main() {
     const pro = new Promise(async (resolve, reject) => {
       console.log(`promise called ${i}`);
       try {
-        const dow = await blobClient.download(i * rangeNum, rangeSize);
+        const dow = await blobClient.download(i * rangeSize, rangeSize);
         await streamVerify(
           dow.readableStreamBody,
           fs.createReadStream(filePath, {
