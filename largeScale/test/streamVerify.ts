@@ -1,8 +1,4 @@
-import {
-  StorageSharedKeyCredential,
-  BlobClient,
-  BlockBlobClient,
-} from "@azure/storage-blob";
+import { StorageSharedKeyCredential, BlobClient } from "@azure/storage-blob";
 import * as util from "util";
 // Load the .env file if it exists
 import * as dotenv from "dotenv";
@@ -13,8 +9,6 @@ console.log(dotenv.config());
 export const fsRead = util.promisify(fs.read);
 export const fsStat = util.promisify(fs.stat);
 
-const MB = 1024 * 1024;
-const blockSize = eval(process.env.BLOCK_SIZE) || 4 * MB;
 const concurrency = eval(process.env.concurrency) || 10;
 
 // import { setLogLevel } from "@azure/logger";
@@ -52,64 +46,28 @@ async function compareStreamWithFile(
   endExclusize: number
 ) {
   const count = endExclusize - start;
-  let blockNum = Math.floor(count / blockSize);
-  const lastBlockSize = count - blockNum * blockSize;
-  let readSize = blockSize;
+  let consumeNext = true;
 
   return new Promise((resolve, reject) => {
     downStream.on("readable", async () => {
-      const fileBuf = new Uint8Array(blockSize);
-      if (blockNum === 0) {
-        readSize = lastBlockSize;
-      }
-      let readRes = await fsRead(fd, fileBuf, 0, readSize, start);
-      if (readRes.bytesRead <= 0) {
-        console.log("file ended earlier");
-        reject(new Error("file ended earlier"));
-      }
-
-      let chunk = downStream.read(readSize);
-      while (chunk) {
+      let chunk;
+      while (consumeNext && null !== (chunk = downStream.read())) {
+        consumeNext = false;
         chunk = toBuffer(chunk);
-        let breakOuter = false;
-        for (let i = 0; i < chunk.byteLength; i++) {
-          if (start === 0 && i < 8) {
-            console.log(`Blob ${i}:`, chunk[chunk.byteOffset + i]);
-            console.log(`file ${i}:`, readRes.buffer[i]);
-          }
-
-          if (chunk[chunk.byteOffset + i] !== readRes.buffer[i]) {
-            console.log("Blob:", chunk[chunk.byteOffset + i]);
-            console.log("file:", readRes.buffer[i]);
-            console.log(chunk.byteLength);
-            console.log(readRes.bytesRead);
-            console.log(
-              `miss match at offset ${
-                start + i
-              }, end: ${endExclusize}, length ${readRes.bytesRead}, i: ${i}`
-            );
-            reject(new Error("miss matched"));
-            breakOuter = true;
-            break;
-            // abort();
-          }
+        const fileBuf = new Uint8Array(chunk.byteLength);
+        const readRes = await fsRead(fd, fileBuf, 0, chunk.byteLength, start);
+        if (chunk.compare(readRes.buffer) !== 0) {
+          console.log("start:", start);
+          console.log("chunk len", chunk.byteLength);
+          console.log("file len", readRes.bytesRead);
+          reject(new Error("miss matched"));
         }
 
-        if (breakOuter) {
-          break;
+        start += chunk.byteLength;
+        if (start === endExclusize) {
+          resolve(true);
         }
-
-        start += readRes.bytesRead;
-        blockNum--;
-        if (start > endExclusize) {
-          reject(new Error("file out range"));
-        }
-
-        if (blockNum === 0) {
-          readSize = lastBlockSize;
-        }
-        readRes = await fsRead(fd, fileBuf, 0, readSize, start);
-        chunk = downStream.read(readSize);
+        consumeNext = true;
       }
     });
 
@@ -164,6 +122,7 @@ export async function main() {
       try {
         console.log(offset, rangeSize);
         const dow = await blobClient.download(offset, rangeSize);
+        dow.readableStreamBody.pause();
 
         await compareStreamWithFile(
           dow.readableStreamBody,
@@ -189,4 +148,5 @@ main()
   })
   .catch((err) => {
     console.log("err:", err.message);
+    abort();
   });
