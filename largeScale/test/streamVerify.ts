@@ -67,9 +67,12 @@ async function compareStreamWithFile(
         }
 
         if (chunk.compare(readRes.buffer, undefined, readRes.bytesRead) !== 0) {
+          console.log(
+            `miss match at offset ${start}, length: ${readRes.bytesRead}`
+          );
           console.log(chunk);
           console.log(readRes.buffer);
-          reject(new Error("miss match"));
+          reject(new Error("miss matched"));
           abort();
         }
 
