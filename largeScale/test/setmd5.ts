@@ -30,7 +30,7 @@ export async function main() {
   );
 
   const blobClient = new BlobClient(
-    "https://jianch.blob.core.windows.net/newcontainer1591948757003/newblob1591948757327",
+    process.env.BLOB,
     sharedKeyCredential
   );
   await blobClient.setHTTPHeaders({ blobContentMD5: md5 });

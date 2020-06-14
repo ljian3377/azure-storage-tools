@@ -9,7 +9,7 @@ console.log(dotenv.config());
 export const fsRead = util.promisify(fs.read);
 export const fsStat = util.promisify(fs.stat);
 
-const concurrency = eval(process.env.concurrency) || 10;
+const concurrency = eval(process.env.concurrency) || 16;
 
 // import { setLogLevel } from "@azure/logger";
 // setLogLevel("info");
@@ -95,7 +95,7 @@ export async function main() {
   const fileSize = (await fsStat(filePath))["size"];
   console.log("file size:", fileSize);
 
-  const rangeSize = fileSize / concurrency;
+  const rangeSize = Math.floor(fileSize / concurrency);
   console.log(
     `file size: ${fileSize}, concurrency: ${concurrency}, rangeSize: ${rangeSize}`
   );
@@ -119,16 +119,22 @@ export async function main() {
   for (let i = 0; i < concurrency; i++) {
     const pro = new Promise(async (resolve, reject) => {
       const offset = i * rangeSize;
+      const count = i === concurrency - 1 ? fileSize % rangeSize : rangeSize;
       try {
-        console.log(offset, rangeSize);
-        const dow = await blobClient.download(offset, rangeSize);
-        dow.readableStreamBody.pause();
+        console.log(offset, count);
+        const dow = await blobClient.download(offset, count, {
+          onProgress: (ev) => {
+            if (ev.loadedBytes % Math.round(count / 16) === 0) {
+              console.log(i, "downloaded Bytes", ev.loadedBytes);
+            }
+          }
+        });
 
         await compareStreamWithFile(
           dow.readableStreamBody,
           fd,
           offset,
-          offset + rangeSize
+          offset + count
         );
       } catch (err) {
         reject(err);
