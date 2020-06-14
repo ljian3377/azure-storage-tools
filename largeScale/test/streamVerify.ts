@@ -65,6 +65,7 @@ async function compareStreamWithFile(
 
         start += chunk.byteLength;
         if (start === endExclusize) {
+          console.log("compare done", start, endExclusize);
           resolve(true);
         }
         consumeNext = true;
@@ -81,7 +82,7 @@ async function compareStreamWithFile(
     });
 
     downStream.on("error", () => {
-      console.log("downStream err");
+      console.log("downStream err", start, endExclusize);
       reject(new Error("downloadStream err"));
     });
   });
@@ -121,7 +122,7 @@ export async function main() {
       const offset = i * rangeSize;
       const count = i === concurrency - 1 ? fileSize - i * rangeSize : rangeSize;
       try {
-        console.log(offset, count);
+        console.log("promise trigger", i, offset, count);
         const dow = await blobClient.download(offset, count, {
           onProgress: (ev) => {
             if (ev.loadedBytes % Math.round(count / 16) === 0) {
@@ -129,7 +130,7 @@ export async function main() {
             }
           }
         });
-
+        console.log("start compare", i);
         await compareStreamWithFile(
           dow.readableStreamBody,
           fd,
