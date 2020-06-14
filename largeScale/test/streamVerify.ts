@@ -45,9 +45,7 @@ async function compareStreamWithFile(
   start: number,
   endExclusize: number
 ) {
-  const count = endExclusize - start;
   let consumeNext = true;
-
   return new Promise((resolve, reject) => {
     downStream.on("readable", async () => {
       let chunk;
@@ -55,9 +53,11 @@ async function compareStreamWithFile(
         consumeNext = false;
         chunk = toBuffer(chunk);
         const fileBuf = new Uint8Array(chunk.byteLength);
+        console.log("Start read file", start, endExclusize, chunk.byteLength);
         const readRes = await fsRead(fd, fileBuf, 0, chunk.byteLength, start);
+        console.log("done read file", start, endExclusize);
         if (chunk.compare(readRes.buffer) !== 0) {
-          console.log("start:", start);
+          console.log("miscompare start end:", start, endExclusize);
           console.log("chunk len", chunk.byteLength);
           console.log("file len", readRes.bytesRead);
           reject(new Error("miss matched"));
@@ -125,7 +125,8 @@ export async function main() {
         console.log("promise trigger", i, offset, count);
         const dow = await blobClient.download(offset, count, {
           onProgress: (ev) => {
-            if (ev.loadedBytes % Math.round(count / 16) === 0) {
+            // if (ev.loadedBytes % Math.round(count / 16) === 0) 
+            {
               console.log(i, "downloaded Bytes", ev.loadedBytes);
             }
           }
