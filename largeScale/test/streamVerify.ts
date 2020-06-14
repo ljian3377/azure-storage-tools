@@ -11,8 +11,8 @@ export const fsStat = util.promisify(fs.stat);
 
 const concurrency = eval(process.env.concurrency) || 16;
 
-// import { setLogLevel } from "@azure/logger";
-// setLogLevel("info");
+import { setLogLevel } from "@azure/logger";
+setLogLevel("info");
 
 function toBuffer(bs: Buffer | string) {
   if (typeof bs === "string") {
@@ -53,9 +53,9 @@ async function compareStreamWithFile(
         consumeNext = false;
         chunk = toBuffer(chunk);
         const fileBuf = new Uint8Array(chunk.byteLength);
-        console.log("Start read file", start, endExclusize, chunk.byteLength, new Date());
+        // console.log("Start read file", start, endExclusize, chunk.byteLength, new Date());
         const readRes = await fsRead(fd, fileBuf, 0, chunk.byteLength, start);
-        console.log("done read file", start, endExclusize, new Date());
+        // console.log("done read file", start, endExclusize, new Date());
         if (chunk.compare(readRes.buffer) !== 0) {
           console.log("miscompare start end:", start, endExclusize);
           console.log("chunk len", chunk.byteLength);
@@ -84,6 +84,11 @@ async function compareStreamWithFile(
     downStream.on("error", () => {
       console.log("downStream err", start, endExclusize);
       reject(new Error("downloadStream err"));
+    });
+
+    downStream.on("close", () => {
+      console.log("downStream close", start, endExclusize);
+      // reject(new Error("downloadStream err"));
     });
   });
 }
@@ -125,8 +130,7 @@ export async function main() {
         console.log("promise trigger", i, offset, count);
         const dow = await blobClient.download(offset, count, {
           onProgress: (ev) => {
-            // if (ev.loadedBytes % Math.round(count / 16) === 0) 
-            {
+            if (ev.loadedBytes % Math.round(count / 16) === 0) {
               console.log(i, "downloaded Bytes", ev.loadedBytes, new Date());
             }
           }
