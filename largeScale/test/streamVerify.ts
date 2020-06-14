@@ -119,7 +119,7 @@ export async function main() {
   for (let i = 0; i < concurrency; i++) {
     const pro = new Promise(async (resolve, reject) => {
       const offset = i * rangeSize;
-      const count = i === concurrency - 1 ? fileSize % rangeSize : rangeSize;
+      const count = i === concurrency - 1 ? fileSize - i * rangeSize : rangeSize;
       try {
         console.log(offset, count);
         const dow = await blobClient.download(offset, count, {
