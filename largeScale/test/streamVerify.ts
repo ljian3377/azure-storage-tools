@@ -53,9 +53,9 @@ async function compareStreamWithFile(
         consumeNext = false;
         chunk = toBuffer(chunk);
         const fileBuf = new Uint8Array(chunk.byteLength);
-        console.log("Start read file", start, endExclusize, chunk.byteLength);
+        console.log("Start read file", start, endExclusize, chunk.byteLength, new Date());
         const readRes = await fsRead(fd, fileBuf, 0, chunk.byteLength, start);
-        console.log("done read file", start, endExclusize);
+        console.log("done read file", start, endExclusize, new Date());
         if (chunk.compare(readRes.buffer) !== 0) {
           console.log("miscompare start end:", start, endExclusize);
           console.log("chunk len", chunk.byteLength);
@@ -127,7 +127,7 @@ export async function main() {
           onProgress: (ev) => {
             // if (ev.loadedBytes % Math.round(count / 16) === 0) 
             {
-              console.log(i, "downloaded Bytes", ev.loadedBytes);
+              console.log(i, "downloaded Bytes", ev.loadedBytes, new Date());
             }
           }
         });
