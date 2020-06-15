@@ -24,23 +24,25 @@ async function main() {
 
   // Use StorageSharedKeyCredential with storage account and account key
   // StorageSharedKeyCredential is only available in Node.js runtime, not in browsers
-  const sharedKeyCredential = new StorageSharedKeyCredential(account, accountKey);
+  const sharedKeyCredential = new StorageSharedKeyCredential(
+    account,
+    accountKey
+  );
 
   const sas = generateAccountSASQueryParameters(
     {
       expiresOn: tmr,
       // ipRange: { start: "0.0.0.0", end: "255.255.255.255" },
-      permissions: AccountSASPermissions.parse("rwdlacup"),
+      permissions: AccountSASPermissions.parse("rwdlacupftx"),
       protocol: SASProtocol.HttpsAndHttp,
       resourceTypes: AccountSASResourceTypes.parse("sco").toString(),
       services: AccountSASServices.parse("btqf").toString(),
       startsOn: now,
-      version: "2019-07-07"
     },
     sharedKeyCredential as StorageSharedKeyCredential
   ).toString();
 
-  console.log('?' + sas);
+  console.log("?" + sas);
 }
 
 main()

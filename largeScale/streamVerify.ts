@@ -1,3 +1,5 @@
+// FIXME: download hang for most of ranges
+
 import { StorageSharedKeyCredential, BlobClient } from "@azure/storage-blob";
 import * as util from "util";
 // Load the .env file if it exists

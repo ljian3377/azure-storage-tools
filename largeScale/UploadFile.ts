@@ -23,9 +23,6 @@ export async function main() {
   const accountKey = process.env.ACCOUNT_KEY || "";
   const chunkSize = eval(process.env.CHUNK_SIZE);
   const filePath = process.env.FILE_PATH;
-  const md5 = Buffer.from(process.env.MD5);
-
-  console.log(chunkSize);
 
   const sharedKeyCredential = new StorageSharedKeyCredential(
     account,
@@ -59,20 +56,12 @@ export async function main() {
   });
   console.log(`Upload block blob ${blobName} successfully at ${new Date()}`);
 
-  await blockBlobClient.setHTTPHeaders({ blobContentMD5: md5 });
-  console.log(`set http header`);
-
-  // verify
+  // verify length
   const expectedLength = fs.statSync(filePath)["size"];
   const getRes = await blockBlobClient.getProperties();
   if (getRes.contentLength !== expectedLength) {
     throw new Error(
       `blob size don't match. uploaded: ${expectedLength}, downloaded: ${getRes.contentLength}`
-    );
-  }
-  if (md5.compare(getRes.contentMD5) !== 0) {
-    throw new Error(
-      `md5 don't match. uploaded: ${md5}, downloaded: ${getRes.contentMD5}`
     );
   }
 }
