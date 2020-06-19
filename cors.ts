@@ -1,10 +1,15 @@
 import * as dotenv from "dotenv";
 dotenv.config();
 
+// import {
+//   BlobServiceClient,
+//   StorageSharedKeyCredential,
+// } from "@azure/storage-blob";
+
 import {
-  BlobServiceClient,
+  ShareServiceClient,
   StorageSharedKeyCredential,
-} from "@azure/storage-blob";
+} from "@azure/storage-file-share";
 
 async function main() {
   const account = process.env.ACCOUNT_NAME || "";
@@ -14,10 +19,11 @@ async function main() {
     account,
     accountKey
   );
-  const serviceClient = new BlobServiceClient(
+  // const serviceClient = new BlobServiceClient(
+  const serviceClient = new ShareServiceClient(
     // `https://${account}.queue.core.windows.net`,
-    // `https://${account}.file.core.windows.net`,
-    `https://${account}.blob.core.windows.net`,
+    `https://${account}.file.core.windows.net`,
+    // `https://${account}.blob.core.windows.net`,
     // `http://127.0.0.1:10001/${account}`,
     sharedKeyCredential
   );

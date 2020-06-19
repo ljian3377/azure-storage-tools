@@ -17,6 +17,7 @@
   "dependencies": {
     "@azure/storage-blob": "file:azure-storage-blob-12.2.0-preview.1.tgz",
     "@azure/storage-file-datalake": "file:azure-storage-file-datalake-12.1.0-preview.1.tgz",
+    "@azure/storage-file-share": "file:azure-storage-file-share-12.2.0.tgz",
     "dotenv": "^8.2.0"
   }
 }
