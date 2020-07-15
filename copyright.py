@@ -5,8 +5,8 @@ import fnmatch
 import argparse
 from textwrap import dedent
 
-parser = argparse.ArgumentParser(description='Add/update copyright on C# files')
-parser.add_argument('root', nargs=1, help='Path to the root of the C# project')
+parser = argparse.ArgumentParser(description='Add/update copyright on typescript files')
+parser.add_argument('root', nargs=1, help='Path to the root of the typescript project')
 args = parser.parse_args()
 
 # Descend into the 'root' directory and find all *.ts files
