@@ -6,6 +6,7 @@
 */
 
 import { BlobServiceClient } from "@azure/storage-blob";
+const maxBufferLength = require("buffer").constants.MAX_LENGTH;
 
 // Load the .env file if it exists
 import * as dotenv from "dotenv";
@@ -39,7 +40,9 @@ export async function main() {
 
   console.log(`start upload ${filePath} at ${new Date()}`);
 
-  const rs = fs.createReadStream(filePath, { highWaterMark: chunkSize });
+  const rs = fs.createReadStream(filePath, {
+    highWaterMark: Math.min(chunkSize, maxBufferLength),
+  });
   const lastLoadedBytes = 0;
   await blockBlobClient.uploadStream(rs, chunkSize, memSize / chunkSize - 4, {
     onProgress: (e) => {
