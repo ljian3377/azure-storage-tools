@@ -39,9 +39,9 @@ export async function main() {
 
   console.log(`start upload ${filePath} at ${new Date()}`);
 
-  const rs = fs.createReadStream(filePath);
+  const rs = fs.createReadStream(filePath, { highWaterMark: chunkSize });
   const lastLoadedBytes = 0;
-  await blockBlobClient.uploadStream(rs, chunkSize, memSize / chunkSize / 2, {
+  await blockBlobClient.uploadStream(rs, chunkSize, memSize / chunkSize - 4, {
     onProgress: (e) => {
       if (e.loadedBytes - lastLoadedBytes > logInterval) {
         console.log(e.loadedBytes);
