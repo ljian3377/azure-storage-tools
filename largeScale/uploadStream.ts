@@ -44,7 +44,7 @@ export async function main() {
   await blockBlobClient.uploadStream(rs, chunkSize, memSize / chunkSize - 4, {
     onProgress: (e) => {
       if (e.loadedBytes - lastLoadedBytes > logInterval) {
-        console.log(e.loadedBytes);
+        console.log(e.loadedBytes / logInterval, "*", logInterval);
       }
     },
   });
