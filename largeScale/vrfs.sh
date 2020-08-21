@@ -14,6 +14,7 @@ cmake --build .
 
 # run binary
 mkdir mnt
+#./vrfs 20TB mnt &
 ./vrfs $1 mnt &
 
 # test read speed

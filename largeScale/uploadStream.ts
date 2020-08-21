@@ -43,7 +43,7 @@ export async function main() {
     highWaterMark: chunkSize / 2,
   });
   const lastLoadedBytes = 0;
-  await blockBlobClient.uploadStream(rs, chunkSize, memSize / chunkSize - 4, {
+  await blockBlobClient.uploadStream(rs, chunkSize, memSize / chunkSize / 2, {
     onProgress: (e) => {
       if (e.loadedBytes - lastLoadedBytes > logInterval) {
         console.log(e.loadedBytes / logInterval, "*", logInterval);
