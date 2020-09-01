@@ -80,10 +80,8 @@ export async function main() {
       });
       rs.on("error", reject);
     });
-    promiseArray.push(pro);
+    await pro;
   }
-
-  await Promise.all(promiseArray);
 }
 
 main()
