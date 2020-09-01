@@ -21,8 +21,8 @@ export async function main() {
 
   const argv = process.argv.slice(2);
   console.log(argv);
-  const start = parseInt(argv[0]);
-  const end = parseInt(argv[1]);
+  const start = eval(argv[0]);
+  const end = eval(argv[1]);
   if (start === NaN || end === NaN) {
     throw new Error(
       `Invalid start or end in the input parameters ${argv[0]} ${argv[1]}`
