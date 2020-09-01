@@ -13,7 +13,6 @@ import * as dotenv from "dotenv";
 console.log(dotenv.config());
 
 import { setLogLevel } from "@azure/logger";
-import { off } from "process";
 setLogLevel("info");
 
 export async function main() {
@@ -45,11 +44,12 @@ export async function main() {
   for (let i = 0; i < blockNum; i++) {
     const pro = new Promise(async (resolve, reject) => {
       const rangeStart = start + i * blockSize;
-      const buf = await blockBlobClient.downloadToBuffer(rangeStart, blockSize);
+      const rangeEnd = (i === blockNum? end: rangeStart + blockSize);
+      const buf = await blockBlobClient.downloadToBuffer(rangeStart, rangeEnd - rangeStart);
       const rs = fs.createReadStream(filePath, {
         autoClose: true,
         start: rangeStart,
-        end: rangeStart + blockSize - 1,
+        end: rangeEnd - 1,
       });
       let offset = 0;
       rs.on("data", (data) => {
