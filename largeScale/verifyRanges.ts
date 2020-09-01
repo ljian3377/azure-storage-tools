@@ -48,7 +48,7 @@ export async function main() {
       const rangeStart = start + i * blockSize;
       const rangeEnd =
         rangeStart + blockSize > end ? end : rangeStart + blockSize;
-      console.log(i, rangeStart, rangeEnd);
+      // console.log(i, rangeStart, rangeEnd);
 
       const buf = await blockBlobClient.downloadToBuffer(
         rangeStart,
