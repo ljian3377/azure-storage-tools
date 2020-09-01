@@ -46,7 +46,8 @@ export async function main() {
   for (let i = 0; i < blockNum; i++) {
     const pro = new Promise(async (resolve, reject) => {
       const rangeStart = start + i * blockSize;
-      const rangeEnd = i === blockNum - 1 ? end : rangeStart + blockSize;
+      const rangeEnd =
+        rangeStart + blockSize > end ? end : rangeStart + blockSize;
       console.log(i, rangeStart, rangeEnd);
 
       const buf = await blockBlobClient.downloadToBuffer(
