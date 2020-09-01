@@ -12,8 +12,8 @@ import { BlobServiceClient, BlockBlobClient } from "@azure/storage-blob";
 import * as dotenv from "dotenv";
 console.log(dotenv.config());
 
-import { setLogLevel } from "@azure/logger";
-setLogLevel("info");
+// import { setLogLevel } from "@azure/logger";
+// setLogLevel("info");
 
 export async function main() {
   const connectStr = process.env.STORAGE_CONNECTION_STRING || "";
