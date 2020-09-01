@@ -44,8 +44,11 @@ export async function main() {
   for (let i = 0; i < blockNum; i++) {
     const pro = new Promise(async (resolve, reject) => {
       const rangeStart = start + i * blockSize;
-      const rangeEnd = (i === blockNum? end: rangeStart + blockSize);
-      const buf = await blockBlobClient.downloadToBuffer(rangeStart, rangeEnd - rangeStart);
+      const rangeEnd = i === blockNum ? end : rangeStart + blockSize;
+      const buf = await blockBlobClient.downloadToBuffer(
+        rangeStart,
+        rangeEnd - rangeStart
+      );
       const rs = fs.createReadStream(filePath, {
         autoClose: true,
         start: rangeStart,
@@ -55,15 +58,19 @@ export async function main() {
       rs.on("data", (data) => {
         data = typeof data === "string" ? Buffer.from(data) : data;
         const chunk = buf.slice(offset, offset + data.byteLength);
-        if (!data.equals(chunk) {
-          reject(new Error(`Contents don't match at block ${i}, offset ${offset}`))
+        if (!data.equals(chunk)) {
+          reject(
+            new Error(`Contents don't match at block ${i}, offset ${offset}`)
+          );
         }
 
         offset += data.byteLength;
       });
 
       rs.on("end", () => {
-        console.log(`comparison done for block ${i}, rangeStart: ${rangeStart}`);
+        console.log(
+          `comparison done for block ${i}, rangeStart: ${rangeStart}`
+        );
         resolve("");
       });
       rs.on("error", reject);
