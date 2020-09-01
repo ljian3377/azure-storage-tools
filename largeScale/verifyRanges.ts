@@ -39,6 +39,8 @@ export async function main() {
 
   const blockSize = 2000 * 1024 * 1024;
   const blockNum = (end - start) / blockSize;
+  console.log(blockNum);
+  console.log(end, start, end - start, (end - start) / blockSize);
 
   let promiseArray = [];
   for (let i = 0; i < blockNum; i++) {
