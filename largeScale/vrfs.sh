@@ -1,3 +1,4 @@
+# ubuntu v20
 # build vrfs
 sudo apt-get update && sudo apt-get install -y fuse3 libfuse3-dev build-essential cmake
 
