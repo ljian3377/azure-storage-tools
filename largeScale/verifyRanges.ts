@@ -18,6 +18,7 @@ console.log(dotenv.config());
 export async function main() {
   const connectStr = process.env.STORAGE_CONNECTION_STRING || "";
   const filePath = process.env.FILE_PATH;
+  const blockSize = eval(process.env.BLOCK_SIZE);
 
   const argv = process.argv.slice(2);
   console.log(argv);
@@ -37,7 +38,6 @@ export async function main() {
     blobServiceClient.credential
   );
 
-  const blockSize = 2000 * 1024 * 1024;
   const blockNum = (end - start) / blockSize;
   console.log(blockNum);
   console.log(end, start, end - start, (end - start) / blockSize);
