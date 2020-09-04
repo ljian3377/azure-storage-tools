@@ -42,7 +42,6 @@ export async function main() {
   console.log(blockNum);
   console.log(end, start, end - start, (end - start) / blockSize);
 
-  let promiseArray = [];
   for (let i = 0; i < blockNum; i++) {
     const pro = new Promise(async (resolve, reject) => {
       const rangeStart = start + i * blockSize;
