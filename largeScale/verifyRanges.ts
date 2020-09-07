@@ -48,6 +48,7 @@ export async function main() {
     autoClose: true,
     start,
     end: end - 1,
+    highWaterMark: blockSize,
   });
 
   const fileReadable = new AvroReadableFromStream(rs);
