@@ -7,6 +7,7 @@
 
 import * as fs from "fs";
 import { BlobServiceClient, BlockBlobClient } from "@azure/storage-blob";
+import { AvroReadableFromStream } from "./AvroReadableFromStream";
 
 // Load the .env file if it exists
 import * as dotenv from "dotenv";
@@ -43,57 +44,29 @@ export async function main() {
   console.log(end, start, end - start, (end - start) / blockSize);
 
   const buf = Buffer.allocUnsafe(blockSize);
+  const rs = fs.createReadStream(filePath, {
+    autoClose: true,
+    start,
+    end: end - 1,
+  });
+
+  const fileReadable = new AvroReadableFromStream(rs);
 
   for (let i = 0; i < blockNum; i++) {
-    const pro = new Promise(async (resolve, reject) => {
-      const rangeStart = start + i * blockSize;
-      const rangeEnd =
-        rangeStart + blockSize > end ? end : rangeStart + blockSize;
-      console.log(i, rangeStart, rangeEnd);
+    const rangeStart = start + i * blockSize;
+    const rangeEnd =
+      rangeStart + blockSize > end ? end : rangeStart + blockSize;
+    const chunkSize = rangeEnd - rangeStart;
+    console.log(i, rangeStart, rangeEnd, chunkSize);
 
-      await blockBlobClient.downloadToBuffer(
-        buf,
-        rangeStart,
-        rangeEnd - rangeStart
+    await blockBlobClient.downloadToBuffer(buf, rangeStart, chunkSize);
+
+    const fileBuf = (await fileReadable.read(chunkSize)) as Buffer;
+    if (!fileBuf.equals(buf.slice(0, chunkSize))) {
+      throw new Error(
+        `remote and local blob don't match at block ${i}, range ${rangeStart} - ${rangeEnd}`
       );
-      const rs = fs.createReadStream(filePath, {
-        autoClose: true,
-        start: rangeStart,
-        end: rangeEnd - 1,
-      });
-      let offset = 0;
-      rs.on("data", (data) => {
-        data = typeof data === "string" ? Buffer.from(data) : data;
-        const chunk = buf.slice(offset, offset + data.byteLength);
-        if (!data.equals(chunk)) {
-          reject(
-            new Error(`Contents don't match at block ${i}, offset ${offset}`)
-          );
-        }
-
-        offset += data.byteLength;
-      });
-
-      rs.on("end", () => {
-        if (offset === rangeEnd - rangeStart) {
-          // console.log(
-          //   `comparison done for block ${i}, rangeStart: ${rangeStart}`
-          // );
-          resolve("");
-        } else {
-          console.log(
-            `length doesn't match, for block ${i}, range: ${rangeStart} - ${rangeEnd}`
-          );
-          reject(
-            new Error(
-              `length doesn't match, for block ${i}, range: ${rangeStart} - ${rangeEnd}`
-            )
-          );
-        }
-      });
-      rs.on("error", reject);
-    });
-    await pro;
+    }
   }
 }
 

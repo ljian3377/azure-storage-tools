@@ -15,6 +15,7 @@
     "typescript": "^3.9.5"
   },
   "dependencies": {
+    "@azure/abort-controller": "^1.0.0",
     "@azure/storage-blob": "latest",
     "@azure/storage-file-datalake": "latest",
     "@azure/storage-file-share": "latest",
