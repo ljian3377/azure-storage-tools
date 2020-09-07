@@ -47,7 +47,7 @@ export async function main() {
       const rangeStart = start + i * blockSize;
       const rangeEnd =
         rangeStart + blockSize > end ? end : rangeStart + blockSize;
-      // console.log(i, rangeStart, rangeEnd);
+      console.log(i, rangeStart, rangeEnd);
 
       const buf = await blockBlobClient.downloadToBuffer(
         rangeStart,
@@ -72,10 +72,21 @@ export async function main() {
       });
 
       rs.on("end", () => {
-        console.log(
-          `comparison done for block ${i}, rangeStart: ${rangeStart}`
-        );
-        resolve("");
+        if (offset === buf.byteLength) {
+          console.log(
+            `comparison done for block ${i}, rangeStart: ${rangeStart}`
+          );
+          resolve("");
+        } else {
+          console.log(
+            `length doesn't match, for block ${i}, range: ${rangeStart} - ${rangeEnd}`
+          );
+          reject(
+            new Error(
+              `length doesn't match, for block ${i}, range: ${rangeStart} - ${rangeEnd}`
+            )
+          );
+        }
       });
       rs.on("error", reject);
     });
