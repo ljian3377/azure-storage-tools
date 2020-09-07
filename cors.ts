@@ -23,17 +23,17 @@ async function setCors(
   if (serviceProperties.cors) {
     console.log("original cors:");
     console.log(serviceProperties.cors);
-    return;
+    // return;
   }
 
   const newCORS = {
     allowedHeaders: "*",
-    allowedMethods: "DELETE,GET,HEAD,MERGE,POST,OPTIONS,PUT",
+    allowedMethods: "DELETE,GET,HEAD,MERGE,POST,OPTIONS,PUT,PATCH",
     allowedOrigins: "*",
     exposedHeaders: "*",
     maxAgeInSeconds: 86400,
   };
-  serviceProperties.cors = [newCORS];
+  (serviceProperties.cors = serviceProperties.cors), newCORS;
   await serviceClient.setProperties(serviceProperties as any);
 
   const newServiceProperties = await serviceClient.getProperties();
