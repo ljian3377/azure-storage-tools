@@ -42,6 +42,8 @@ export async function main() {
   console.log(blockNum);
   console.log(end, start, end - start, (end - start) / blockSize);
 
+  const buf = Buffer.allocUnsafe(blockSize);
+
   for (let i = 0; i < blockNum; i++) {
     const pro = new Promise(async (resolve, reject) => {
       const rangeStart = start + i * blockSize;
@@ -49,7 +51,8 @@ export async function main() {
         rangeStart + blockSize > end ? end : rangeStart + blockSize;
       console.log(i, rangeStart, rangeEnd);
 
-      const buf = await blockBlobClient.downloadToBuffer(
+      await blockBlobClient.downloadToBuffer(
+        buf,
         rangeStart,
         rangeEnd - rangeStart
       );
@@ -72,7 +75,7 @@ export async function main() {
       });
 
       rs.on("end", () => {
-        if (offset === buf.byteLength) {
+        if (offset === rangeEnd - rangeStart) {
           console.log(
             `comparison done for block ${i}, rangeStart: ${rangeStart}`
           );
