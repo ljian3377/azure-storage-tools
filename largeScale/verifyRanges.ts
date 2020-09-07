@@ -76,9 +76,9 @@ export async function main() {
 
       rs.on("end", () => {
         if (offset === rangeEnd - rangeStart) {
-          console.log(
-            `comparison done for block ${i}, rangeStart: ${rangeStart}`
-          );
+          // console.log(
+          //   `comparison done for block ${i}, rangeStart: ${rangeStart}`
+          // );
           resolve("");
         } else {
           console.log(
