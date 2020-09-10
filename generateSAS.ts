@@ -31,6 +31,7 @@ async function main() {
 
   const sas = generateAccountSASQueryParameters(
     {
+      version: "2020-02-10",
       expiresOn: tmr,
       // ipRange: { start: "0.0.0.0", end: "255.255.255.255" },
       permissions: AccountSASPermissions.parse("rwdlacupftx"),

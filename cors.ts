@@ -33,7 +33,7 @@ async function setCors(
     exposedHeaders: "*",
     maxAgeInSeconds: 86400,
   };
-  (serviceProperties.cors = serviceProperties.cors), newCORS;
+  serviceProperties.cors = [...serviceProperties.cors, newCORS];
   await serviceClient.setProperties(serviceProperties as any);
 
   const newServiceProperties = await serviceClient.getProperties();
