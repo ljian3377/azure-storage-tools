@@ -44,40 +44,51 @@ async function setCors(
 async function main() {
   const account = process.env.ACCOUNT_NAME || "";
   const accountKey = process.env.ACCOUNT_KEY || "";
-  console.log("using account:", account, accountKey);
+  let service = process.argv[2];
+  console.log("using account:", account, accountKey, service);
 
-  console.log("Setting CORS for Blob service.");
-  const blobSharedKeyCredential = new BlobStorageSharedKeyCredential(
-    account,
-    accountKey
-  );
-  const blobServiceClient = new BlobServiceClient(
-    `https://${account}.blob.core.windows.net`,
-    blobSharedKeyCredential
-  );
-  await setCors(blobServiceClient);
+  if (!(service === "blob" || service === "file" || service === "queue")) {
+    service = undefined;
+  }
 
-  console.log("Setting CORS for File service.");
-  const fileSharedKeyCredential = new FileStorageSharedKeyCredential(
-    account,
-    accountKey
-  );
-  const shareServiceClient = new ShareServiceClient(
-    `https://${account}.file.core.windows.net`,
-    fileSharedKeyCredential
-  );
-  await setCors(shareServiceClient);
+  if (service === undefined || service === "blob") {
+    console.log("Setting CORS for Blob service.");
+    const blobSharedKeyCredential = new BlobStorageSharedKeyCredential(
+      account,
+      accountKey
+    );
+    const blobServiceClient = new BlobServiceClient(
+      `https://${account}.blob.core.windows.net`,
+      blobSharedKeyCredential
+    );
+    await setCors(blobServiceClient);
+  }
 
-  console.log("Setting CORS for Queue service.");
-  const queueSharedKeyCredential = new QueueStorageSharedKeyCredential(
-    account,
-    accountKey
-  );
-  const queueServiceClient = new QueueServiceClient(
-    `https://${account}.queue.core.windows.net`,
-    queueSharedKeyCredential
-  );
-  await setCors(queueServiceClient);
+  if (service === undefined || service === "file") {
+    console.log("Setting CORS for File service.");
+    const fileSharedKeyCredential = new FileStorageSharedKeyCredential(
+      account,
+      accountKey
+    );
+    const shareServiceClient = new ShareServiceClient(
+      `https://${account}.file.core.windows.net`,
+      fileSharedKeyCredential
+    );
+    await setCors(shareServiceClient);
+  }
+
+  if (service === undefined || service === "queue") {
+    console.log("Setting CORS for Queue service.");
+    const queueSharedKeyCredential = new QueueStorageSharedKeyCredential(
+      account,
+      accountKey
+    );
+    const queueServiceClient = new QueueServiceClient(
+      `https://${account}.queue.core.windows.net`,
+      queueSharedKeyCredential
+    );
+    await setCors(queueServiceClient);
+  }
 }
 
 main()
