@@ -16,7 +16,8 @@
   },
   "dependencies": {
     "@azure/abort-controller": "^1.0.0",
-    "@azure/storage-blob": "latest",
+    "@azure/identity": "^1.1.0",
+    "@azure/storage-blob": "^12.2.0",
     "@azure/storage-file-datalake": "latest",
     "@azure/storage-file-share": "latest",
     "@azure/storage-queue": "latest",
