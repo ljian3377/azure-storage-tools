@@ -20,7 +20,9 @@ async function main() {
 
   for await (const item of serviceClient.listShares()) {
     const shareClient = serviceClient.getShareClient(item.name);
-    await shareClient.delete();
+    try {
+    await shareClient.delete({deleteSnapshots: "include-leased"});
+    } catch(e){}
   }
 }
 
