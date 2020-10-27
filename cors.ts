@@ -20,11 +20,8 @@ async function setCors(
   serviceClient: BlobServiceClient | ShareServiceClient | QueueServiceClient
 ) {
   const serviceProperties = await serviceClient.getProperties();
-  if (serviceProperties.cors) {
-    console.log("original cors:");
-    console.log(serviceProperties.cors);
-    // return;
-  }
+  // console.log("original properties:");
+  // console.log(serviceProperties);
 
   const newCORS = {
     allowedHeaders: "*",
@@ -34,11 +31,17 @@ async function setCors(
     maxAgeInSeconds: 86400,
   };
   serviceProperties.cors = [...serviceProperties.cors, newCORS];
-  await serviceClient.setProperties(serviceProperties as any);
 
-  const newServiceProperties = await serviceClient.getProperties();
-  console.log("new cors:");
-  console.log(newServiceProperties.cors);
+  const servicePropertiesToSet = {
+    cors: serviceProperties.cors,
+  };
+
+  // fix issue introduced by SMB multi-channel
+  await serviceClient.setProperties(servicePropertiesToSet);
+
+  // const newServiceProperties = await serviceClient.getProperties();
+  // console.log("new properties:");
+  // console.log(newServiceProperties);
 }
 
 async function main() {
