@@ -109,17 +109,17 @@ export async function main() {
   const res = await blobServiceClient.getUserDelegationKey(now, later);
   console.log(res);
 
-  console.log(
-    await defaultAzureCredential.getToken("https://storage.azure.com/.default")
+  const accessToken = await defaultAzureCredential.getToken(
+    "https://storage.azure.com/.default"
   );
+  console.log(accessToken);
 
-  const tokenCredential = new SimpleTokenCredential(process.env.AZURE_TOKEN);
+  const tokenCredential = new SimpleTokenCredential(accessToken.token);
   const blobServiceClient2 = new BlobServiceClient(
     `https://${account}.blob.core.windows.net`,
     tokenCredential
   );
-  const res2 = await blobServiceClient2.getUserDelegationKey(now, later);
-  console.log(res2);
+  await blobServiceClient2.getUserDelegationKey(now, later);
 }
 
 main().catch((err) => {
