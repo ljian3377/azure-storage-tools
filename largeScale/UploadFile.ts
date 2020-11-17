@@ -15,8 +15,8 @@ import * as dotenv from "dotenv";
 import * as fs from "fs";
 console.log(dotenv.config());
 
-import { setLogLevel } from "@azure/logger";
-setLogLevel("info");
+// import { setLogLevel } from "@azure/logger";
+// setLogLevel("info");
 
 export async function main() {
   const account = process.env.ACCOUNT_NAME || "";
@@ -46,7 +46,8 @@ export async function main() {
   const blobName = "newblob" + new Date().getTime();
   const blockBlobClient = containerClient.getBlockBlobClient(blobName);
 
-  console.log(`start upload file ${filePath} at ${new Date()}`);
+  const start = new Date();
+  console.log(`start upload file ${filePath} at ${start}`);
   await blockBlobClient.uploadFile(filePath, {
     blockSize: chunkSize,
     concurrency: 16,
@@ -54,7 +55,12 @@ export async function main() {
       console.log(e.loadedBytes);
     },
   });
-  console.log(`Upload block blob ${blobName} successfully at ${new Date()}`);
+  const end = new Date();
+  console.log(
+    `Upload block blob ${blobName} successfully at ${end}, time elapsed ${
+      end.getTime() - start.getTime()
+    }`
+  );
 
   // verify length
   const expectedLength = fs.statSync(filePath)["size"];
