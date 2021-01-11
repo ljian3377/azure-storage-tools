@@ -307,6 +307,13 @@ import * as fs from "fs";
 import * as util from "util";
 const fsStat = util.promisify(fs.stat);
 
+// Load the .env file if it exists
+import * as dotenv from "dotenv";
+dotenv.config();
+
+// import { setLogLevel } from "@azure/logger";
+// setLogLevel("info");
+
 /**
  * Base64 encode.
  *
@@ -324,10 +331,7 @@ function base64encode(content: string): string {
  * @param {number} blockIndex
  * @returns {string}
  */
-export function generateBlockID(
-  blockIDPrefix: string,
-  blockIndex: number
-): string {
+function generateBlockID(blockIDPrefix: string, blockIndex: number): string {
   // To generate a 64 bytes base64 string, source string should be 48
   const maxSourceStringLength = 48;
 
@@ -348,6 +352,10 @@ export function generateBlockID(
   return base64encode(res);
 }
 
+function delay<T>(t: number, value?: T): Promise<T | void> {
+  return new Promise((resolve) => setTimeout(() => resolve(value), t));
+}
+
 async function main() {
   // Fill in following settings before running this sample
   const destBlobUrlWithSAS = process.env.DEST_BLOB || "";
@@ -355,7 +363,7 @@ async function main() {
 
   const size = (await fsStat(filePath)).size;
   const concurrency = 5;
-  const blockSize = 16 * 1024;
+  const blockSize = 1024 * 1024;
   const numBlocks: number = Math.floor((size - 1) / blockSize) + 1;
 
   const onProgress = (progress) => {
@@ -381,7 +389,7 @@ async function main() {
           () =>
             fs.createReadStream(filePath, {
               autoClose: true,
-              end,
+              end: end - 1,
               start,
             }),
           contentLength
@@ -402,13 +410,26 @@ async function main() {
   };
 
   const doneCallback = async () => {
-    console.log(`Stage blocks done.`);
+    console.log(`Upload done.`);
   };
 
   batch
     .do()
     .then(doneCallback)
     .catch((err) => {
-      console.log(`Stage blocks failed with ${err}`);
+      console.log(`Upload failed with ${err}`);
     });
+
+  await delay(100);
+  console.log("Try to pasue Batch.");
+  await batch.pause();
+  console.log("Batch paused.");
+  await delay(5000);
+  console.log("Resume Batch.");
+  batch.resume();
+  console.log("Batch resumed.");
 }
+
+main().catch((err) => {
+  console.error("Error running sample:", err.message);
+});
