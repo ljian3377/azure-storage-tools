@@ -428,6 +428,7 @@ async function main() {
   console.log("Resume Batch.");
   batch.resume();
   console.log("Batch resumed.");
+  await delay(1000);
 }
 
 main().catch((err) => {
