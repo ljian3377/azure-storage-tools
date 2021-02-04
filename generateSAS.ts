@@ -15,7 +15,7 @@ async function main() {
   now.setMinutes(now.getMinutes() - 5); // Skip clock skew with server
 
   const tmr = new Date();
-  tmr.setDate(tmr.getDate() + 100);
+  tmr.setDate(tmr.getDate() + 1000);
 
   const account = process.env.ACCOUNT_NAME || "";
   const accountKey = process.env.ACCOUNT_KEY || "";
