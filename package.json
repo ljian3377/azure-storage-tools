@@ -10,17 +10,17 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@types/node": "^12.19.15",
+    "@types/node": "^12.20.4",
     "ts-node": "^8.10.2",
-    "typescript": "^3.9.7"
+    "typescript": "^3.9.9"
   },
   "dependencies": {
-    "@azure/abort-controller": "^1.0.2",
-    "@azure/identity": "^1.2.2",
-    "@azure/storage-blob": "^12.4.0",
-    "@azure/storage-file-datalake": "^12.3.0",
+    "@azure/abort-controller": "latest",
+    "@azure/identity": "latest",
+    "@azure/storage-blob": "latest",
+    "@azure/storage-file-datalake": "latest",
     "@azure/storage-file-share": "latest",
-    "@azure/storage-queue": "^12.3.0",
+    "@azure/storage-queue": "latest",
     "dotenv": "^8.2.0"
   }
 }
